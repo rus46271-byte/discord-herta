@@ -6,10 +6,9 @@ from groq import Groq
 # Groq 클라이언트 설정 (무료 API 키 사용)
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
-# 디스코드 봇 인텐트 설정 (members 인텐트 추가 필수!)
+# 디스코드 봇 인텐트 설정 (메시지 내용 권한만 유지)
 intents = discord.Intents.default()
 intents.message_content = True
-intents.members = True  # 멤버가 서버에 들어오는 것을 감지하기 위해 필요합니다!
 discord_client = discord.Client(intents=intents)
 
 # 채널별 대화 기록을 저장할 딕셔너리
@@ -30,24 +29,7 @@ SYSTEM_PROMPT = (
 )
 
 
-# 1. 새로운 멤버가 서버에 입장했을 때 실행되는 이벤트
-@discord_client.event
-async def on_member_join(member):
-  # 인사를 보낼 채널 이름 (서버에 맞게 수정하세요. 예: "일반", "채팅", "welcome" 등)
-  target_channel_name = "일반"
-
-  for channel in member.guild.text_channels:
-    if channel.name == target_channel_name:
-      # 헤르타 컨셉의 환영 인사 메시지 구성
-      welcome_message = (
-          f"흥, 새로운 얼굴이네? {member.mention}, 여긴 내방이니까 저기 챗방이나 가라구."
-          " 뭐, 시간나면 시뮬레이션 우주에나 와."
-      )
-      await channel.send(welcome_message)
-      break
-
-
-# 2. 메시지를 받았을 때 실행되는 이벤트
+# 메시지를 받았을 때 실행되는 이벤트
 @discord_client.event
 async def on_message(message):
   # 봇 자신이 보낸 메시지는 무시 (무한 루프 방지)
