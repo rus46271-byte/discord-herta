@@ -58,8 +58,8 @@ async def on_message(message):
   # 느낌표(!)로 시작하기만 하면 뒤에 띄어쓰기 없이도 작동
   if message.content.startswith("ㅎ!"):
     # 느낌표 바로 다음 글자부터 내용을 가져옴
-    user_message = message.content[2:].strip()
-    if not user_message:
+    user_user_message = message.content[2:].strip()
+    if not user_user_message:
       return
 
     channel_id = message.channel.id
@@ -67,7 +67,7 @@ async def on_message(message):
     try:
       # 1. 해당 채널의 대화 기록에 사용자 메시지 추가
       chat_histories[channel_id].append(
-          {"role": "user", "content": user_message}
+          {"role": "user", "content": user_user_message}
       )
 
       # 2. 너무 길어지면 메모리 폭발 및 에러를 방지하기 위해 최근 10개 메시지만 유지
@@ -79,9 +79,9 @@ async def on_message(message):
           channel_id
       ]
 
-      # 현재 Groq에서 지원하는 최신 모델명으로 설정
+      # Groq 모델명 설정
       response = client.chat.completions.create(
-          model="llama-3.3-70b-versatile",
+          model="llama-3.1-8b-instant",
           messages=messages_to_send,
       )
 
