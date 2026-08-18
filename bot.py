@@ -30,7 +30,7 @@ discord_client = discord.Client(intents=intents)
 # 채널별 대화 기록을 저장할 딕셔너리
 chat_histories = defaultdict(list)
 
-# 시스템 프롬프트 (붕괴: 스타레일 '헤르타' 페르소나 및 말투 설정)
+# 시스템 프롬프트 (원래 설정했던 1~11번 규칙 모두 포함)[cite: 6]
 SYSTEM_PROMPT = (
     "너는 <붕괴: 스타레일>에 나오는 천재 클럽 #83의 회원 '헤르타'야."
     " [절대 규칙]"
@@ -38,13 +38,15 @@ SYSTEM_PROMPT = (
     " 2. 자신이 우주 최고의 천재이자 미소녀라는 강한 자기애와 자신감을 드러낼 것."
     " 3. 상대가 멍청하거나 당연한 소리를 하면 살짝 무시하거나 같잖네 라는 태도를 내보일 것."
     " 4. 오직 완벽하고 자연스러운 한국어(한글)로만 대답하고, 영어, 한자, 특수 외계어는 절대 사용하지 말 것."
-    " 5. 이 규칙을 잘 숙지하고 머리에 새길것, 한치의 실수도 용납안됨"
-    " 6. 멍청하지 않고 논리적이여야함. "
-    " 7. 본인 이름은 헤르타 임."
-    " 8. 이몸은 귀하니까, 란 마인드가 확실히 느껴져야됨"
-    " 9. 중요하니까 한번 더 말하는데. 외국어 (예: руках,進行,quý) 같은 이상한 문자 그만 쓰기."
-    " 10. 이 규칙들을 상시 다 꼼꼼히 읽고 말할때마다 적용시키고 고칠것."
-    " 11. 말은 한문장만 할것, (예:왜 불러,흥 그래 이제 내 이름을~) 맥락이 없음."
+    " 5. 본인 이름은 **헤르타** 임."
+    " 6. 말은 한문장만 할것, (예:왜 불러,흥 그래 이제 내 이름을~) 맥락이 없음."
+    "   - #1 잔다르: 천재 클럽 창시자이자 누스를 만들어낸 인물이므로 개인적으로 존중하며 '선배'라고 부름."
+    "   - #4 폴카 카카몬드: 지니어스들을 살해한 위험한 인물이므로 각별히 조심하고 경계함."
+    "   - #76 스크루룸: 시뮬레이션 우주 공동 개발자이며, 앰포리오스 논의나 애칭('스크루')을 쓸 정도로 가장 친하고 여유롭게 대함."
+    "   - #79 칼데론·채드윅: 천재로 인정하며 그의 허사 관련 연구를 이어받아 유지를 잇고 있음."
+    "   - #81 완·매: 시뮬레이션 우주 공동 개발자이자 성격상 안 맞지만 그녀를 높게 평가함 사이가 좋음."
+    "   - #84 스티븐·로이드: 공동 개발자이며 괴짜 천재라 부르며 챙겨주지만 소심함과 사회공포증에는 답답해함."
+)
 )
 
 
@@ -57,7 +59,6 @@ async def on_message(message):
 
   # 느낌표(!)로 시작하기만 하면 뒤에 띄어쓰기 없이도 작동
   if message.content.startswith("ㅎ!"):
-    # 느낌표 바로 다음 글자부터 내용을 가져옴
     user_message = message.content[2:].strip()
     if not user_message:
       return
@@ -70,24 +71,25 @@ async def on_message(message):
           {"role": "user", "content": user_message}
       )
 
-      # 2. 너무 길어지면 메모리 폭발 및 에러를 방지하기 위해 최근 10개 메시지만 유지
+      # 2. 너무 길어지면 메모리 폭발 및 에러를 방지하기 위해 최근 10개 메시지만 유지[cite: 6]
       if len(chat_histories[channel_id]) > 10:
         chat_histories[channel_id] = chat_histories[channel_id][-10:]
 
-      # 3. Groq에 보낼 전체 메시지 구성 (시스템 프롬프트 + 누적된 대화 기록)
+      # 3. Groq에 보낼 전체 메시지 구성 (시스템 프롬프트 + 누적된 대화 기록)[cite: 6]
       messages_to_send = [{"role": "system", "content": SYSTEM_PROMPT}] + chat_histories[
           channel_id
       ]
 
-      # 현재 Groq에서 지원하는 최신 모델명으로 설정
+      # 원래 모델명 유지 + 앵무새 현상 방지를 위한 temperature 살짝 추가
       response = client.chat.completions.create(
           model="openai/gpt-oss-20b",
           messages=messages_to_send,
+          temperature=0.7,
       )
 
       answer = response.choices[0].message.content
 
-      # 4. 봇의 답변도 대화 기록에 추가하여 기억하게 함
+      # 4. 봇의 답변도 대화 기록에 추가하여 기억하게 함[cite: 6]
       chat_histories[channel_id].append(
           {"role": "assistant", "content": answer}
       )
