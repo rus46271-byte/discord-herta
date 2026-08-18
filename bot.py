@@ -79,9 +79,9 @@ async def on_message(message):
           channel_id
       ]
 
-      # Groq 모델명을 현재 지원되는 버전으로 변경
+      # Groq 모델명을 안정적인 기본 모델로 변경
       response = client.chat.completions.create(
-          model="llama-3.1-8b-instant",
+          model="llama3-70b-8192",
           messages=messages_to_send,
       )
 
