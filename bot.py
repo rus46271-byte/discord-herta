@@ -79,9 +79,9 @@ async def on_message(message):
           channel_id
       ]
 
-      # Groq 무료 고성능 모델 호출
+      # Groq 모델명을 정상 지원되는 버전으로 변경
       response = client.chat.completions.create(
-          model="llama-3.3-70b-versatile",
+          model="llama-3.1-70b-versatile",
           messages=messages_to_send,
       )
 
